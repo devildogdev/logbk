@@ -21,4 +21,5 @@ The folder structure should be `yyyy/mm/dd.md`, and the file should open with th
 - [X] File path handling
 - [X] Walking a directory
 - [X] Time and Date
-- [ ] Opening a program in Go
+- [X] Opening a program in Go
+- [ ] Writing to a file
