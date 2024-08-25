@@ -13,6 +13,8 @@ The folder structure should be `yyyy/mm/dd.md`, and the file should open with th
 
 ## Research
 
-- Opening an editor in Go
-- OS module and file handling
-- Reading from a config file (Viper)
+- [X] Reading from a config file (Viper)
+- [X] File path handling
+- [X] Walking a directory
+- [ ] Time and Date
+- [ ] Opening a program in Go
