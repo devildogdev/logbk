@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -24,26 +25,29 @@ func getConfig() *viper.Viper {
 	return app
 }
 
-func getEntryPath() {}
-
-func main() {
-	conf := getConfig()
-	jpath := conf.GetString("journal_path")
-	if strings.HasPrefix(jpath, "~") {
+func newEntryPath(root string) string {
+	if strings.HasPrefix(root, "~") {
 		homeDir, err := os.UserHomeDir()
 		if err != nil {
 			log.Fatal(err)
 		}
-		jpath = filepath.Join(homeDir, filepath.Base(jpath))
+		root = filepath.Join(homeDir, filepath.Base(root))
 	}
-	fmt.Printf("journal_path: %s\n", jpath)
 	now := time.Now()
-	yyyy := now.Year()
-	mm := now.Month()
-	dd := now.Day()
-	if mm < 10 {
-		fmt.Printf("generated_path: %s/%d/0%d/%d%s\n", jpath, yyyy, mm, dd, ".md")
-	} else {
-		fmt.Printf("generated_path: %s/%d/%d/%d%s\n", jpath, yyyy, mm, dd, ".md")
+	y := strconv.Itoa(now.Year())
+	m := strconv.Itoa(int(now.Month()))
+	d := strconv.Itoa(now.Day())
+	if len(m) < 2 {
+		m = fmt.Sprintf("0%s", m)
 	}
+	if len(d) < 2 {
+		d = fmt.Sprintf("0%s", d)
+	}
+	return fmt.Sprintf("%s/%s/%s/%s%s", root, y, m, d, ".md")
+}
+
+func main() {
+	conf := getConfig()
+	ep := newEntryPath(conf.GetString("journal_path"))
+	fmt.Println(ep)
 }

@@ -2,6 +2,10 @@
 
 A journaling application.
 
+## Inspiration
+
+The journal in Zed.
+
 ## MVP
 
 A CLI that can create journal entries in markdown based on the date and time, similar to the journal in Zed.
@@ -16,5 +20,5 @@ The folder structure should be `yyyy/mm/dd.md`, and the file should open with th
 - [X] Reading from a config file (Viper)
 - [X] File path handling
 - [X] Walking a directory
-- [ ] Time and Date
+- [X] Time and Date
 - [ ] Opening a program in Go
