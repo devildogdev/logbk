@@ -11,14 +11,24 @@ import (
 	"github.com/spf13/viper"
 )
 
-func main() {
-	viper.SetDefault("journal_path", "~/journal/")
-	viper.SetConfigFile("./settings.json")
-	err := viper.ReadInConfig()
+func getConfig() *viper.Viper {
+	app := viper.New()
+	app.SetDefault("journal_path", "~/journal/")
+	app.SetConfigType("json")
+	app.SetConfigName("settings.json")
+	app.AddConfigPath(".")
+	err := app.ReadInConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
-	jpath := viper.GetString("journal_path")
+	return app
+}
+
+func getEntryPath() {}
+
+func main() {
+	conf := getConfig()
+	jpath := conf.GetString("journal_path")
 	if strings.HasPrefix(jpath, "~") {
 		homeDir, err := os.UserHomeDir()
 		if err != nil {
@@ -27,19 +37,6 @@ func main() {
 		jpath = filepath.Join(homeDir, filepath.Base(jpath))
 	}
 	fmt.Printf("journal_path: %s\n", jpath)
-	// err = filepath.WalkDir(
-	// 	jpath,
-	// 	func(r string, d fs.DirEntry, err error) error {
-	// 		info, err := d.Info()
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	// 		fmt.Println(info.Name())
-	// 		return nil
-	// 	})
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
 	now := time.Now()
 	yyyy := now.Year()
 	mm := now.Month()
