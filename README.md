@@ -22,4 +22,6 @@ The folder structure should be `yyyy/mm/dd.md`, and the file should open with th
 - [X] Walking a directory
 - [X] Time and Date
 - [X] Opening a program in Go
-- [ ] Writing to a file
+- [X] Writing to a file
+  - [ ] Now do it without overwriting
+- [ ] Make neovim open with cursor on the last line

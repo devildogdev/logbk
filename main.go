@@ -52,9 +52,15 @@ func main() {
 	if len(day) < 2 {
 		day = fmt.Sprintf("0%s", day)
 	}
+	if len(hour) < 2 {
+		hour = fmt.Sprintf("0%s", hour)
+	}
+	if len(min) < 2 {
+		min = fmt.Sprintf("0%s", min)
+	}
 	ep := fmt.Sprintf("%s/%s/%s/%s%s", jpath, year, month, day, ".md")
-	fmt.Println(ep)
-	nowEntry := fmt.Sprintf("# %s:%s", hour, min)
+	nowEntry := fmt.Sprintf("# %s:%s\n\n\n", hour, min)
+	// This overwrites the file, and that's bad...
 	os.WriteFile(ep, []byte(nowEntry), os.ModeAppend)
 	editor, ok := os.LookupEnv("EDITOR")
 	if !ok {
@@ -65,6 +71,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	// Make neovim open with cursor at the last line
 	nvimArgs := []string{"nvim", ep}
 	env := os.Environ()
 	syscall.Exec(bin, nvimArgs, env)
