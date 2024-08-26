@@ -72,7 +72,7 @@ func main() {
 		panic(err)
 	}
 	// Make neovim open with cursor at the last line
-	nvimArgs := []string{"nvim", ep}
+	nvimArgs := []string{"nvim", "+", ep}
 	env := os.Environ()
 	syscall.Exec(bin, nvimArgs, env)
 }
