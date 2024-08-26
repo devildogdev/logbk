@@ -14,7 +14,19 @@ import (
 	"github.com/spf13/viper"
 )
 
-func getConfig() *viper.Viper {
+func newEntry() error {
+	return nil
+}
+
+func handleTilde(p string) string {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return filepath.Join(homeDir, filepath.Base(p))
+}
+
+func main() {
 	app := viper.New()
 	app.SetDefault("journal_path", "~/journal/")
 	app.SetConfigType("json")
@@ -22,36 +34,28 @@ func getConfig() *viper.Viper {
 	app.AddConfigPath(".")
 	err := app.ReadInConfig()
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
-	return app
-}
-
-func newEntryPath(root string) (string, error) {
-	if strings.HasPrefix(root, "~") {
-		homeDir, err := os.UserHomeDir()
-		if err != nil {
-			log.Fatal(err)
-		}
-		root = filepath.Join(homeDir, filepath.Base(root))
-	}
-	if !filepath.IsAbs(root) {
-		return "", fmt.Errorf("%s is not an absolute path!", root)
+	jpath := app.GetString("journal_path")
+	if strings.HasPrefix(jpath, "~") {
+		jpath = handleTilde(jpath)
 	}
 	now := time.Now()
-	y := strconv.Itoa(now.Year())
-	m := strconv.Itoa(int(now.Month()))
-	d := strconv.Itoa(now.Day())
-	if len(m) < 2 {
-		m = fmt.Sprintf("0%s", m)
+	year := strconv.Itoa(now.Year())
+	month := strconv.Itoa(int(now.Month()))
+	day := strconv.Itoa(now.Day())
+	hour := strconv.Itoa(now.Hour())
+	min := strconv.Itoa(now.Minute())
+	if len(month) < 2 {
+		month = fmt.Sprintf("0%s", month)
 	}
-	if len(d) < 2 {
-		d = fmt.Sprintf("0%s", d)
+	if len(day) < 2 {
+		day = fmt.Sprintf("0%s", day)
 	}
-	return fmt.Sprintf("%s/%s/%s/%s%s", root, y, m, d, ".md"), nil
-}
-
-func openFileInEditor(path string) error {
+	ep := fmt.Sprintf("%s/%s/%s/%s%s", jpath, year, month, day, ".md")
+	fmt.Println(ep)
+	nowEntry := fmt.Sprintf("# %s:%s", hour, min)
+	os.WriteFile(ep, []byte(nowEntry), os.ModeAppend)
 	editor, ok := os.LookupEnv("EDITOR")
 	if !ok {
 		fmt.Println("$EDITOR not set. Using nvim.")
@@ -59,19 +63,9 @@ func openFileInEditor(path string) error {
 	}
 	bin, err := exec.LookPath(editor)
 	if err != nil {
-		return err
-	}
-	nvimArgs := []string{"nvim", path}
-	env := os.Environ()
-	syscall.Exec(bin, nvimArgs, env)
-	return nil
-}
-
-func main() {
-	conf := getConfig()
-	ep, err := newEntryPath(conf.GetString("journal_path"))
-	if err != nil {
 		panic(err)
 	}
-	openFileInEditor(ep)
+	nvimArgs := []string{"nvim", ep}
+	env := os.Environ()
+	syscall.Exec(bin, nvimArgs, env)
 }
