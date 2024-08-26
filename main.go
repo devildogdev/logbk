@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -14,16 +13,57 @@ import (
 	"github.com/spf13/viper"
 )
 
-func newEntry() error {
+func twoDigitString(n int) string {
+	s := strconv.Itoa(n)
+	if len(s) < 2 {
+		s = fmt.Sprintf("0%s", s)
+	}
+	return s
+}
+
+func newEntry(path string) error {
+	now := time.Now()
+	ep := fmt.Sprintf(
+		"%s/%s/%s/%s%s",
+		path,
+		twoDigitString(now.Year()),
+		twoDigitString(int(now.Month())),
+		twoDigitString(now.Day()),
+		".md",
+	)
+	ts := fmt.Sprintf(
+		"# %s:%s\n\n\n",
+		twoDigitString(now.Hour()),
+		twoDigitString(now.Minute()),
+	)
+	// This overwrites the file, and that's bad...
+	os.WriteFile(ep, []byte(ts), os.ModeAppend)
+	editor, ok := os.LookupEnv("EDITOR")
+	if !ok {
+		fmt.Println("$EDITOR not set. Using vim.")
+		editor = "vim"
+	}
+	bin, err := exec.LookPath(editor)
+	if err != nil {
+		panic(err)
+	}
+	args := []string{editor, "+", ep}
+	err = syscall.Exec(bin, args, os.Environ())
+	if err != nil {
+		panic(err)
+	}
 	return nil
 }
 
-func handleTilde(p string) string {
-	homeDir, err := os.UserHomeDir()
+func handleTilde(jp string) string {
+	h, err := os.UserHomeDir()
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
-	return filepath.Join(homeDir, filepath.Base(p))
+	return filepath.Join(
+		h,
+		filepath.Base(jp),
+	)
 }
 
 func main() {
@@ -40,39 +80,5 @@ func main() {
 	if strings.HasPrefix(jpath, "~") {
 		jpath = handleTilde(jpath)
 	}
-	now := time.Now()
-	year := strconv.Itoa(now.Year())
-	month := strconv.Itoa(int(now.Month()))
-	day := strconv.Itoa(now.Day())
-	hour := strconv.Itoa(now.Hour())
-	min := strconv.Itoa(now.Minute())
-	if len(month) < 2 {
-		month = fmt.Sprintf("0%s", month)
-	}
-	if len(day) < 2 {
-		day = fmt.Sprintf("0%s", day)
-	}
-	if len(hour) < 2 {
-		hour = fmt.Sprintf("0%s", hour)
-	}
-	if len(min) < 2 {
-		min = fmt.Sprintf("0%s", min)
-	}
-	ep := fmt.Sprintf("%s/%s/%s/%s%s", jpath, year, month, day, ".md")
-	nowEntry := fmt.Sprintf("# %s:%s\n\n\n", hour, min)
-	// This overwrites the file, and that's bad...
-	os.WriteFile(ep, []byte(nowEntry), os.ModeAppend)
-	editor, ok := os.LookupEnv("EDITOR")
-	if !ok {
-		fmt.Println("$EDITOR not set. Using nvim.")
-		editor = "nvim"
-	}
-	bin, err := exec.LookPath(editor)
-	if err != nil {
-		panic(err)
-	}
-	// Make neovim open with cursor at the last line
-	nvimArgs := []string{"nvim", "+", ep}
-	env := os.Environ()
-	syscall.Exec(bin, nvimArgs, env)
+	newEntry(jpath)
 }
