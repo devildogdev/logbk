@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"syscall"
@@ -12,6 +13,12 @@ import (
 
 	"github.com/spf13/viper"
 )
+
+var editorCmds = []string{
+	"vim",
+	"nvim",
+	"zed --wait",
+}
 
 func twoDigitString(n int) string {
 	s := strconv.Itoa(n)
@@ -41,6 +48,28 @@ func checkEntryExists(p string) {
 	}
 }
 
+func openWithEditor(fp string) error {
+	editor, ok := os.LookupEnv("EDITOR")
+	if !ok {
+		fmt.Println("$EDITOR not set. Using vim.")
+		editor = "vim"
+	}
+	if !slices.Contains(editorCmds, editor) {
+		fmt.Println("Your editor is not supported. Using vim.")
+		editor = "vim"
+	}
+	bin, err := exec.LookPath(editor)
+	if err != nil {
+		return err
+	}
+	args := []string{editor, "+", fp}
+	err = syscall.Exec(bin, args, os.Environ())
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func newEntry(path string) error {
 	now := time.Now()
 	ep := fmt.Sprintf(
@@ -58,17 +87,7 @@ func newEntry(path string) error {
 		twoDigitString(now.Minute()),
 	)
 	addTimestamp(ep, ts)
-	editor, ok := os.LookupEnv("EDITOR")
-	if !ok {
-		fmt.Println("$EDITOR not set. Using vim.")
-		editor = "vim"
-	}
-	bin, err := exec.LookPath(editor)
-	if err != nil {
-		return err
-	}
-	args := []string{editor, "+", ep}
-	err = syscall.Exec(bin, args, os.Environ())
+	err := openWithEditor(ep)
 	if err != nil {
 		return err
 	}
