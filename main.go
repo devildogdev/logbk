@@ -34,6 +34,13 @@ func addTimestamp(p string, ts string) error {
 	return nil
 }
 
+func checkEntryExists(p string) {
+	if _, err := os.Stat(p); os.IsNotExist(err) {
+		d := filepath.Dir(p)
+		os.MkdirAll(d, 0755)
+	}
+}
+
 func newEntry(path string) error {
 	now := time.Now()
 	ep := fmt.Sprintf(
@@ -44,12 +51,12 @@ func newEntry(path string) error {
 		twoDigitString(now.Day()),
 		".md",
 	)
+	checkEntryExists(ep)
 	ts := fmt.Sprintf(
-		"\n# %s:%s\n\n\n",
+		"\n\n# %s:%s\n\n\n",
 		twoDigitString(now.Hour()),
 		twoDigitString(now.Minute()),
 	)
-	// This overwrites the file, and that's bad...
 	addTimestamp(ep, ts)
 	editor, ok := os.LookupEnv("EDITOR")
 	if !ok {
@@ -58,12 +65,12 @@ func newEntry(path string) error {
 	}
 	bin, err := exec.LookPath(editor)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	args := []string{editor, "+", ep}
 	err = syscall.Exec(bin, args, os.Environ())
 	if err != nil {
-		panic(err)
+		return err
 	}
 	return nil
 }
@@ -93,5 +100,8 @@ func main() {
 	if strings.HasPrefix(jpath, "~") {
 		jpath = handleTilde(jpath)
 	}
-	newEntry(jpath)
+	err = newEntry(jpath)
+	if err != nil {
+		panic(err)
+	}
 }
