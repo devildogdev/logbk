@@ -17,7 +17,6 @@ import (
 var editorCmds = []string{
 	"vim",
 	"nvim",
-	"zed --wait",
 }
 
 func twoDigitString(n int) string {
@@ -61,6 +60,10 @@ func openWithEditor(fp string) error {
 	bin, err := exec.LookPath(editor)
 	if err != nil {
 		return err
+	}
+	switch editor {
+	case "zed --wait":
+
 	}
 	args := []string{editor, "+", fp}
 	err = syscall.Exec(bin, args, os.Environ())
