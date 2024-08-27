@@ -61,10 +61,6 @@ func openWithEditor(fp string) error {
 	if err != nil {
 		return err
 	}
-	switch editor {
-	case "zed --wait":
-
-	}
 	args := []string{editor, "+", fp}
 	err = syscall.Exec(bin, args, os.Environ())
 	if err != nil {
