@@ -21,6 +21,19 @@ func twoDigitString(n int) string {
 	return s
 }
 
+func addTimestamp(p string, ts string) error {
+	f, err := os.OpenFile(p, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+	_, err = f.WriteString(ts)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	return nil
+}
+
 func newEntry(path string) error {
 	now := time.Now()
 	ep := fmt.Sprintf(
@@ -32,12 +45,12 @@ func newEntry(path string) error {
 		".md",
 	)
 	ts := fmt.Sprintf(
-		"# %s:%s\n\n\n",
+		"\n# %s:%s\n\n\n",
 		twoDigitString(now.Hour()),
 		twoDigitString(now.Minute()),
 	)
 	// This overwrites the file, and that's bad...
-	os.WriteFile(ep, []byte(ts), os.ModeAppend)
+	addTimestamp(ep, ts)
 	editor, ok := os.LookupEnv("EDITOR")
 	if !ok {
 		fmt.Println("$EDITOR not set. Using vim.")
