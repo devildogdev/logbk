@@ -1,4 +1,4 @@
-module github.com/j-tew/logbk
+module github.com/devildogdev/logbk
 
 go 1.23.0
 
