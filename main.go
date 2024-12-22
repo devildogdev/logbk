@@ -40,10 +40,10 @@ func addTimestamp(p string, ts string) error {
     return nil
 }
 
-func checkEntryExists(p string) {
-    if _, err := os.Stat(p); os.IsNotExist(err) {
-        d := filepath.Dir(p)
-        os.MkdirAll(d, 0755)
+func createDir(d string) {
+    if _, err := os.Stat(d); os.IsNotExist(err) {
+        name := filepath.Dir(d)
+        os.MkdirAll(name, 0755)
     }
 }
 
@@ -79,7 +79,7 @@ func newEntry(path string) error {
         twoDigitString(now.Day()),
         ".md",
     )
-    checkEntryExists(ep)
+    createDir(ep)
     ts := fmt.Sprintf(
         "\n\n# %s:%s\n\n\n",
         twoDigitString(now.Hour()),
